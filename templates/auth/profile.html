@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Security Profile - EHR Guardian{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="row">
+        <!-- Profile Summary Card -->
+        <div class="col-md-4 mb-4">
+            <div class="ehr-card">
+                <div class="ehr-card-body text-center p-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ user.full_name[:1] | upper }}
+                    </div>
+                    <h4 class="fw-bold mb-1">{{ user.full_name }}</h4>
+                    <p class="text-muted mb-2">@{{ user.username }}</p>
+                    <span class="badge {% if user.role_name == 'admin' %}bg-danger{% elif user.role_name == 'doctor' %}bg-success{% else %}bg-primary{% endif %} text-uppercase px-3 py-2">
+                        {{ user.role_name }}
+                    </span>
+                    <hr>
+                    <div class="text-start small">
+                        <div class="mb-2"><strong>Email:</strong> {{ user.email }}</div>
+                        <div class="mb-2"><strong>Phone:</strong> {{ user.phone or 'Not provided' }}</div>
+                        <div class="mb-2"><strong>Account Created:</strong> {{ user.created_at.strftime('%b %d, %Y') }}</div>
+                        <div><strong>Last Login:</strong> {{ user.last_login.strftime('%b %d, %Y %H:%M') if user.last_login else 'Current Session' }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security & Settings -->
+        <div class="col-md-8">
+            <!-- Edit Profile Details -->
+            <div class="ehr-card mb-4">
+                <div class="ehr-card-header">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-user-pen me-2 text-primary"></i> Contact Information</h5>
+                </div>
+                <div class="ehr-card-body">
+                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                        <input type="hidden" name="action" value="update_profile">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold">Full Legal Name</label>
+                                <input type="text" class="form-control" name="full_name" value="{{ user.full_name }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold">Phone Number</label>
+                                <input type="text" class="form-control" name="phone" value="{{ user.phone or '' }}">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary-ehr btn-sm">
+                            <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="ehr-card">
+                <div class="ehr-card-header">
+                    <h5 class="fw-bold mb-0"><i class="fa-solid fa-shield-halved me-2 text-danger"></i> Password & Cryptographic Access</h5>
+                </div>
+                <div class="ehr-card-body">
+                    <form method="POST" action="{{ url_for('auth.profile') }}">
+                        <input type="hidden" name="action" value="change_password">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold">Current Password</label>
+                            <input type="password" class="form-control" name="current_password" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold">New Password</label>
+                                <input type="password" class="form-control" id="password" name="new_password" required>
+                                <div class="progress mt-2" style="height: 5px;">
+                                    <div id="strength-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                </div>
+                                <small id="strength-text" class="form-text text-muted" style="font-size: 0.75rem;">Requires upper, lower, number, and symbol.</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold">Confirm New Password</label>
+                                <input type="password" class="form-control" name="confirm_password" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fa-solid fa-key me-1"></i> Update Security Password
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EHR Guardian | Zero-Plaintext Healthcare Security</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- Cyber Theme Styling -->
+    <link href="{{ url_for('static', filename='css/cyber_theme.css') }}" rel="stylesheet">
+</head>
+<body class="cyber-theme">
+
+    <!-- Top Navigation Header -->
+    <nav class="navbar navbar-expand-lg cyber-navbar py-3 px-4 px-lg-5">
+        <div class="container-fluid px-0">
+            <!-- Brand Logo -->
+            <a class="navbar-brand d-flex align-items-center gap-2 text-decoration-none" href="/">
+                <span class="ehr-brand-icon">
+                    <i class="fa-solid fa-shield-heart"></i>
+                </span>
+                <span class="ehr-logo-text">
+                    <span class="fw-bold text-white">EHR</span>
+                    <span class="ehr-gradient">Guardian</span>
+                    <span class="ehr-crypto-badge">
+                        <i class="fa-solid fa-lock me-1"></i> AES-256-GCM
+                    </span>
+                </span>
+            </a>
+
+            <!-- Right Controls -->
+            <div class="d-flex align-items-center gap-3 ms-auto">
+                <div class="cyber-mode-pill d-none d-md-inline-flex">
+                    <span class="pulse-dot"></span>
+                    <span>DEFENSE NETWORK ACTIVE &bull; NIST SP 800-38D</span>
+                </div>
+
+                {% if session.get('user_id') %}
+                    <a href="{{ url_for('index', dashboard=1) }}" class="btn btn-cyber-hero btn-sm py-2 px-3 fs-6">
+                        <i class="fa-solid fa-gauge me-1"></i> Open Dashboard
+                    </a>
+                {% else %}
+                    <button type="button" class="btn btn-cyber-outline btn-sm py-2 px-4" data-bs-toggle="modal" data-bs-target="#loginModal">
+                        <i class="fa-solid fa-right-to-bracket me-1"></i> Sign In
+                    </button>
+                    <button type="button" class="btn btn-cyber-primary btn-sm py-2 px-4 d-none d-sm-inline-block" data-bs-toggle="modal" data-bs-target="#registerModal">
+                        <i class="fa-solid fa-user-plus me-1"></i> Register
+                    </button>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <!-- Centered Hero Section (Globe Centered in Middle, Clean UI, No Boring Info Box) -->
+    <main class="cyber-hero-wrapper">
+        
+        <!-- Glowing Top Pill Badge -->
+        <div class="hero-pill-badge">
+            <span class="pulse-dot"></span>
+            <span>ENTERPRISE HEALTHCARE DEFENSE &bull; ZERO-PLAINTEXT STORAGE</span>
+        </div>
+
+        <!-- Epic Hero Title -->
+        <h1 class="hero-title">
+            NEXT-GEN HEALTHCARE<br>
+            <span class="ehr-gradient">CRYPTOGRAPHIC SHIELD</span>
+        </h1>
+
+        <!-- Crisp Subtitle -->
+        <p class="hero-subtitle">
+            Authenticated AES-256-GCM encryption for patient records, tamper-evident clinical auditing, and strict boundary isolation.
+        </p>
+
+        <!-- Centered 3D Interactive Cyber Earth / Particle Globe -->
+        <div class="centered-globe-container">
+            <canvas id="cyberGlobeCanvas"></canvas>
+        </div>
+
+        <!-- High-Impact Action Buttons (Right below Globe) -->
+        <div class="hero-cta-group">
+            {% if session.get('user_id') %}
+                <a href="{{ url_for('index', dashboard=1) }}" class="btn btn-cyber-hero">
+                    <i class="fa-solid fa-gauge"></i> Enter Dashboard
+                </a>
+            {% else %}
+                <button type="button" class="btn btn-cyber-hero" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    <i class="fa-solid fa-shield-halved"></i> Access Secure Portal
+                </button>
+                <button type="button" class="btn btn-cyber-outline" data-bs-toggle="modal" data-bs-target="#registerModal">
+                    <i class="fa-solid fa-user-plus"></i> Create Account
+                </button>
+            {% endif %}
+        </div>
+
+        <!-- Quick 1-Click Demo Access Strip -->
+        <div class="demo-access-strip">
+            <span class="small fw-semibold"><i class="fa-solid fa-bolt text-warning me-1"></i> Instant Demo Login:</span>
+            <span class="demo-chip demo-chip-admin" onclick="openLoginWith('admin', 'Admin@2026Secure!')">
+                <i class="fa-solid fa-user-shield text-danger"></i> Admin
+            </span>
+            <span class="demo-chip demo-chip-doc" onclick="openLoginWith('dr.sarah', 'Doctor@2026Pass!')">
+                <i class="fa-solid fa-stethoscope text-success"></i> Doctor
+            </span>
+            <span class="demo-chip demo-chip-pat" onclick="openLoginWith('patient.john', 'Patient@2026Key!')">
+                <i class="fa-solid fa-heart-pulse text-primary"></i> Patient
+            </span>
+        </div>
+
+        <!-- Minimalist Glass Stats HUD Bar (Replaces the boring information box) -->
+        <div class="cyber-hud-strip">
+            <div class="hud-item">
+                <div class="hud-icon"><i class="fa-solid fa-key"></i></div>
+                <div class="text-start">
+                    <div class="hud-label">Cipher</div>
+                    <div class="hud-val">AES-256-GCM AEAD</div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-icon"><i class="fa-solid fa-fingerprint"></i></div>
+                <div class="text-start">
+                    <div class="hud-label">Integrity</div>
+                    <div class="hud-val">128-Bit Auth Tag</div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-icon"><i class="fa-solid fa-users-slash"></i></div>
+                <div class="text-start">
+                    <div class="hud-label">Privacy</div>
+                    <div class="hud-val">Role Boundary Isolated</div>
+                </div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                <div class="text-start">
+                    <div class="hud-label">Audit Log</div>
+                    <div class="hud-val">Tamper-Evident Matrix</div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Minimal Cyber Footer -->
+    <footer class="cyber-footer">
+        <div class="container-fluid px-4 px-lg-5 d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
+            <div class="d-flex flex-wrap align-items-center gap-3">
+                <a href="#crypto" onclick="alert('EHR Guardian: AES-256-GCM encryption with 96-bit unique nonces per record.'); return false;">
+                    <i class="fa-solid fa-shield-halved me-1 text-info"></i> NIST SP 800-38D
+                </a>
+                <span>&bull;</span>
+                <a href="#zero" onclick="alert('Zero-Plaintext Policy: Clinical notes and files are encrypted before storage.'); return false;">
+                    Zero-Plaintext Storage
+                </a>
+                <span>&bull;</span>
+                <a href="#audit" onclick="alert('Audit Trail: All access and decryption events logged permanently.'); return false;">
+                    Append-Only Audit
+                </a>
+            </div>
+            <div>
+                &copy; {{ current_year }} EHR Guardian System. Enterprise Healthcare Security.
+            </div>
+        </div>
+    </footer>
+
+    <!-- ====================================================================== -->
+    <!-- Sleek Cyber Login Modal -->
+    <!-- ====================================================================== -->
+    <div class="modal fade cyber-modal" id="loginModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-info">
+                        <i class="fa-solid fa-shield-heart me-2"></i> EHR Portal Authentication
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form method="POST" action="{{ url_for('auth.login') }}">
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-light">Username or Email</label>
+                            <input type="text" class="form-control" name="username" id="modal_username" placeholder="e.g. admin or dr.sarah" required autofocus>
+                        </div>
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between">
+                                <label class="form-label small fw-semibold text-light">Password</label>
+                                <a href="{{ url_for('auth.reset_password') }}" class="small text-info text-decoration-none">Forgot?</a>
+                            </div>
+                            <input type="password" class="form-control" name="password" id="modal_password" placeholder="••••••••" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-cyber-primary w-100 py-2 mb-3">
+                            <i class="fa-solid fa-arrow-right-to-bracket me-1"></i> Authenticate & Enter
+                        </button>
+                    </form>
+
+                    <!-- One-Click Demo Access Helper -->
+                    <div class="border-top border-secondary pt-3 mt-2">
+                        <span class="small text-muted d-block mb-2"><i class="fa-solid fa-bolt text-warning me-1"></i> Quick Demo Access (One-Click):</span>
+                        <div class="btn-group w-100">
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="fillModalCreds('admin', 'Admin@2026Secure!')">
+                                Admin
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="fillModalCreds('dr.sarah', 'Doctor@2026Pass!')">
+                                Doctor
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm" onclick="fillModalCreds('patient.john', 'Patient@2026Key!')">
+                                Patient
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ====================================================================== -->
+    <!-- Sleek Cyber Register Modal -->
+    <!-- ====================================================================== -->
+    <div class="modal fade cyber-modal" id="registerModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-info">
+                        <i class="fa-solid fa-user-plus me-2"></i> Register Healthcare Account
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form method="POST" action="{{ url_for('auth.register') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold text-light">Role Selection</label>
+                                <select class="form-select" name="role" required>
+                                    <option value="patient" selected>Patient (Healthcare Portal)</option>
+                                    <option value="doctor">Doctor (Clinical Staff)</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold text-light">Full Legal Name</label>
+                                <input type="text" class="form-control" name="full_name" placeholder="Dr. Alice Smith or John Doe" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold text-light">Username</label>
+                                <input type="text" class="form-control" name="username" placeholder="alice.smith" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold text-light">Email Address</label>
+                                <input type="email" class="form-control" name="email" placeholder="alice@hospital.org" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold text-light">Password (Min 8 chars, mixed)</label>
+                                <input type="password" class="form-control" name="password" placeholder="••••••••" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label small fw-semibold text-light">Confirm Password</label>
+                                <input type="password" class="form-control" name="confirm_password" placeholder="••••••••" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-light">Contact Phone</label>
+                            <input type="tel" class="form-control" name="phone" placeholder="+1 (555) 019-2834">
+                        </div>
+
+                        <button type="submit" class="btn btn-cyber-primary w-100 py-2">
+                            <i class="fa-solid fa-key me-1"></i> Register Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Interactive 3D Cyber Globe Script -->
+    <script src="{{ url_for('static', filename='js/cyber_globe.js') }}"></script>
+    <script>
+        function fillModalCreds(username, password) {
+            document.getElementById('modal_username').value = username;
+            document.getElementById('modal_password').value = password;
+        }
+
+        function openLoginWith(username, password) {
+            fillModalCreds(username, password);
+            const modalEl = document.getElementById('loginModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        }
+    </script>
+</body>
+</html>

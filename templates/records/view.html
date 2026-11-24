@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Record #{{ record.id }} - {{ record.diagnosis_title }} - EHR Guardian{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h2 class="fw-bold mb-0">{{ record.diagnosis_title }}</h2>
+            <span class="badge-crypto-gcm">AES-256-GCM Verified</span>
+        </div>
+        <p class="text-muted small mb-0">Record #{{ record.id }} &bull; Consulted on {{ record.visit_date.strftime('%B %d, %Y') }}</p>
+    </div>
+    <div>
+        {% if session.get('role') in ['doctor', 'admin'] %}
+            <a href="{{ url_for('doctor.patient_detail', patient_id=record.patient.id) }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i> Patient Chart
+            </a>
+        {% else %}
+            <a href="{{ url_for('patient.dashboard') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fa-solid fa-arrow-left me-1"></i> My Health Portal
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- Clinical Notes Card -->
+        <div class="ehr-card mb-4">
+            <div class="ehr-card-header d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-navy"><i class="fa-solid fa-file-medical text-primary me-2"></i> Authenticated Decrypted Clinical Notes</h5>
+                <span class="badge bg-success-subtle text-success border border-success-subtle">
+                    <i class="fa-solid fa-check-double me-1"></i> Tag Verified
+                </span>
+            </div>
+            <div class="ehr-card-body p-4">
+                <div class="p-3 bg-light rounded border mb-4" style="white-space: pre-line; line-height: 1.7;">
+                    {{ decrypted_notes }}
+                </div>
+
+                {% if decrypted_treatment %}
+                    <h6 class="fw-bold text-navy mb-2"><i class="fa-solid fa-clipboard-list text-teal me-2"></i> Treatment Directives</h6>
+                    <div class="p-3 bg-light rounded border" style="white-space: pre-line; line-height: 1.7;">
+                        {{ decrypted_treatment }}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Prescriptions Linked -->
+        {% if record.prescriptions.count() > 0 %}
+            <div class="ehr-card mb-4">
+                <div class="ehr-card-header">
+                    <h5 class="fw-bold mb-0 text-success"><i class="fa-solid fa-pills me-2"></i> Prescribed Medications</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Medication</th>
+                                <th>Decrypted Dosage</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rx in record.prescriptions %}
+                                <tr>
+                                    <td class="fw-bold text-navy">{{ rx.medication_name }}</td>
+                                    <td>{{ rx.get_decrypted_dosage() }}</td>
+                                    <td>{{ rx.duration_days }} days</td>
+                                    <td>
+                                        <span class="badge bg-success-subtle text-success">{{ rx.status }}</span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Documents Attached -->
+        {% if record.documents.count() > 0 %}
+            <div class="ehr-card mb-4">
+                <div class="ehr-card-header">
+                    <h5 class="fw-bold mb-0 text-teal"><i class="fa-solid fa-file-shield me-2"></i> Attached Diagnostic Documents</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-custom align-middle">
+                        <thead>
+                            <tr>
+                                <th>Filename</th>
+                                <th>Size</th>
+                                <th>SHA-256 Checksum</th>
+                                <th class="text-end">Download</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for doc in record.documents %}
+                                <tr>
+                                    <td class="fw-semibold">
+                                        <i class="fa-solid fa-file-pdf text-danger me-2"></i> {{ doc.original_filename }}
+                                    </td>
+                                    <td class="small text-muted">{{ (doc.file_size_bytes / 1024) | round(1) }} KB</td>
+                                    <td>
+                                        <code class="small text-muted font-monospace">{{ doc.file_checksum_sha256[:16] }}...</code>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('records.download_document', doc_id=doc.id) }}" class="btn btn-sm btn-outline-success">
+                                            <i class="fa-solid fa-download me-1"></i> Decrypt & Download
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Metadata & Security Sidebar -->
+    <div class="col-lg-4">
+        <div class="ehr-card mb-4">
+            <div class="ehr-card-header">
+                <h6 class="fw-bold mb-0"><i class="fa-solid fa-fingerprint text-primary me-2"></i> Security Metadata</h6>
+            </div>
+            <div class="ehr-card-body p-4 small">
+                <div class="mb-3">
+                    <span class="text-muted d-block">Encryption Algorithm:</span>
+                    <strong class="text-navy">AES-256-GCM (NIST SP 800-38D)</strong>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">Key Version:</span>
+                    <strong>v{{ record.encryption_version }} (Active Master Key)</strong>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">Authentication Tag Status:</span>
+                    <span class="badge bg-success-subtle text-success">128-bit Tag Verified</span>
+                </div>
+                <div class="mb-3">
+                    <span class="text-muted d-block">Attending Physician:</span>
+                    <strong>Dr. {{ record.author_doctor.user.full_name }}</strong> ({{ record.author_doctor.specialization }})
+                </div>
+                <div>
+                    <span class="text-muted d-block">Patient:</span>
+                    <strong>{{ record.patient.full_name }}</strong> ({{ record.patient.patient_uid }})
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Administrator Control Center - EHR Guardian{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Administrative Control Center</h2>
+        <p class="text-muted small mb-0">System security health, encryption metrics, user directory, and audit summaries</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline-secondary btn-sm">
+            <i class="fa-solid fa-users me-1"></i> User Directory
+        </a>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-primary-ehr btn-sm">
+            <i class="fa-solid fa-clipboard-list me-1"></i> Audit Logs
+        </a>
+    </div>
+</div>
+
+<!-- Key Metric Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card shadow-sm">
+            <div>
+                <span class="text-muted small fw-semibold">Total Patients</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.total_patients }}</h3>
+                <small class="text-success"><i class="fa-solid fa-circle-check"></i> Profiles Encrypted</small>
+            </div>
+            <div class="stat-icon-wrapper stat-icon-blue">
+                <i class="fa-solid fa-hospital-user"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card shadow-sm">
+            <div>
+                <span class="text-muted small fw-semibold">Clinical Staff</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.total_doctors }}</h3>
+                <small class="text-info"><i class="fa-solid fa-stethoscope"></i> Licensed Doctors</small>
+            </div>
+            <div class="stat-icon-wrapper stat-icon-teal">
+                <i class="fa-solid fa-user-doctor"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card shadow-sm">
+            <div>
+                <span class="text-muted small fw-semibold">Encrypted Records</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.total_records }}</h3>
+                <small class="text-success"><i class="fa-solid fa-lock"></i> AES-256-GCM AEAD</small>
+            </div>
+            <div class="stat-icon-wrapper stat-icon-emerald">
+                <i class="fa-solid fa-file-shield"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="stat-card shadow-sm">
+            <div>
+                <span class="text-muted small fw-semibold">Audit Events</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.total_audit_events }}</h3>
+                <small class="text-muted"><i class="fa-solid fa-fingerprint"></i> Tamper Evident</small>
+            </div>
+            <div class="stat-icon-wrapper stat-icon-navy">
+                <i class="fa-solid fa-clock-rotate-left"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cryptographic Status & Architecture Card -->
+<div class="row g-3 mb-4">
+    <div class="col-lg-8">
+        <div class="ehr-card h-100">
+            <div class="ehr-card-header">
+                <h6 class="fw-bold mb-0"><i class="fa-solid fa-shield-halved text-success me-2"></i> Cryptographic Architecture Status</h6>
+                <span class="badge bg-success">Operational</span>
+            </div>
+            <div class="ehr-card-body">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small fw-semibold d-block mb-1">Authenticated Cipher</span>
+                            <div class="fw-bold text-navy">AES-256-GCM (Galois/Counter Mode)</div>
+                            <small class="text-muted">NIST SP 800-38D standard with 128-bit authentication tag</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small fw-semibold d-block mb-1">Nonce Management</span>
+                            <div class="fw-bold text-teal">96-bit (12-byte) Cryptographic Nonce</div>
+                            <small class="text-muted">Unique pseudo-random nonce generated per encryption</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small fw-semibold d-block mb-1">Key Ring & Rotation</span>
+                            <div class="fw-bold text-primary">Active Key Version: v{{ stats.active_key_version }} ({{ stats.key_ring_count }} keys in ring)</div>
+                            <small class="text-muted">Envelope encryption supports seamless multi-key rotation</small>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small fw-semibold d-block mb-1">File Storage Encryption</span>
+                            <div class="fw-bold text-secondary">Encrypted Binary Blobs (.enc)</div>
+                            <small class="text-muted">SHA-256 checksums verified upon in-memory decryption</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick System Overview -->
+    <div class="col-lg-4">
+        <div class="ehr-card h-100">
+            <div class="ehr-card-header">
+                <h6 class="fw-bold mb-0"><i class="fa-solid fa-user-plus text-primary me-2"></i> Recent Registrations</h6>
+            </div>
+            <div class="ehr-card-body p-0">
+                <ul class="list-group list-group-flush small">
+                    {% for u in recent_users %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2 px-3">
+                            <div>
+                                <div class="fw-semibold">{{ u.full_name }}</div>
+                                <div class="text-muted" style="font-size: 0.75rem;">@{{ u.username }} &bull; {{ u.email }}</div>
+                            </div>
+                            <span class="badge {% if u.role_name == 'admin' %}bg-danger{% elif u.role_name == 'doctor' %}bg-success{% else %}bg-primary{% endif %} text-uppercase" style="font-size: 0.65rem;">
+                                {{ u.role_name }}
+                            </span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Security Audit Trail Table -->
+<div class="ehr-card">
+    <div class="ehr-card-header">
+        <h6 class="fw-bold mb-0"><i class="fa-solid fa-shield-virus text-danger me-2"></i> Recent Security Audit Trail</h6>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline-primary btn-sm py-0" style="font-size: 0.8rem;">
+            View Full Trail &rarr;
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom align-middle">
+            <thead>
+                <tr>
+                    <th>Timestamp (UTC)</th>
+                    <th>Action</th>
+                    <th>User</th>
+                    <th>Status</th>
+                    <th>Client IP</th>
+                    <th>Event Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_audits %}
+                    <tr>
+                        <td class="text-muted small">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                        <td>
+                            <code class="fw-semibold text-primary" style="font-size: 0.8rem;">{{ log.action }}</code>
+                        </td>
+                        <td>{{ log.user.username if log.user else 'System/Guest' }}</td>
+                        <td>
+                            {% if log.status == 'SUCCESS' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.75rem;">SUCCESS</span>
+                            {% elif log.status == 'FAILURE' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.75rem;">FAILURE</span>
+                            {% else %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle" style="font-size: 0.75rem;">DENIED</span>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ log.ip_address or 'Local' }}</td>
+                        <td class="small text-muted">{{ log.details or '-' }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

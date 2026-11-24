@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Data Storage</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.9-1-crypto-js.js"></script>
+</head>
+<body>
+    <h1>Patient Data Form</h1>
+
+    <form id="patient Information">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name"><br><br>
+
+        <label for="age">Age:</label><br>
+        <input type="number" id="age" name="age"><br><br>
+
+        <label for="reason">Condition:</label><br>
+        <input type="text" id="condition" name="condition"><br><br>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Encrypted Patient Data</h2>
+    <p id="encryptedData">No data submitted yet.</p>
+
+    <script>
+        // Function to encrypt data using AES
+        function encryptData(data, password) {
+            return CryptoJS.AES.encrypt(data, password).toString();
+        }
+
+        // When form is submitted
+        document.getElementById("patientForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            // Get the values from the form
+            const name = document.getElementById("name").value;
+            const age = document.getElementById("age").value;
+            const condition = document.getElementById("condition").value;
+
+            // Combine all data into a single string
+            const patientData = `Name: ${name}, Age: ${age}, Condition: ${condition}`;
+
+            // Encrypt the data (password should be stored securely in real applications)
+            const password = "secretPassword";  // You should securely generate or store this password
+            const encryptedData = encryptData(patientData, password);
+
+            // Display encrypted data
+            document.getElementById("encryptedData").innerText = encryptedData;
+        });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+
+{% block title %}Create Encrypted Medical Record - EHR Guardian{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">New Consultation Record</h2>
+        <p class="text-muted small mb-0">Record clinical diagnosis, write encrypted treatment plans, and upload diagnostic files</p>
+    </div>
+    <a href="{{ url_for('doctor.patient_detail', patient_id=patient.id) }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fa-solid fa-arrow-left me-1"></i> Return to Patient Chart
+    </a>
+</div>
+
+<!-- Cryptographic Assurance Alert -->
+<div class="crypto-alert-callout mb-4 d-flex align-items-center gap-3">
+    <i class="fa-solid fa-shield-halved fa-2x text-teal"></i>
+    <div>
+        <strong>AES-256-GCM AEAD Encryption Enforced</strong>
+        <p class="mb-0 small">
+            All clinical notes, treatment plans, prescriptions, and file attachments submitted through this form will be encrypted with AES-256-GCM using unique per-record nonces. Data is verified with a 128-bit authentication tag before being saved.
+        </p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="ehr-card">
+            <div class="ehr-card-body p-4">
+                <form method="POST" action="{{ url_for('records.new_record', patient_id=patient.id) }}" enctype="multipart/form-data">
+                    <h5 class="fw-bold mb-3 text-navy"><i class="fa-solid fa-notes-medical text-primary me-2"></i> Clinical Consultation Details</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-semibold">Record Category</label>
+                            <select class="form-select" name="record_type" required>
+                                <option value="Consultation" selected>General Consultation</option>
+                                <option value="Diagnosis">Clinical Diagnosis</option>
+                                <option value="Lab Report">Diagnostic / Lab Evaluation</option>
+                                <option value="Surgery">Surgical Procedure Note</option>
+                                <option value="Discharge Summary">Discharge Summary</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-semibold">Consultation Date</label>
+                            <input type="date" class="form-control" name="visit_date" value="{{ now.strftime('%Y-%m-%d') }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Primary Diagnosis Title</label>
+                        <input type="text" class="form-control" name="diagnosis_title" placeholder="e.g. Essential Hypertension - Stage 1" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Clinical Notes & Observations (Encrypted with AES-256-GCM)</label>
+                        <textarea class="form-control" name="clinical_notes" rows="4" placeholder="Enter confidential patient symptoms, history, examination findings..." required></textarea>
+                        <small class="form-text text-muted">Plaintext is encrypted in memory before database persistence.</small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-semibold">Treatment Plan & Directives (Encrypted with AES-256-GCM)</label>
+                        <textarea class="form-control" name="treatment_plan" rows="3" placeholder="Dietary restrictions, recommended physical activity, clinical follow-ups..."></textarea>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Optional Prescription -->
+                    <h5 class="fw-bold mb-3 text-success"><i class="fa-solid fa-pills me-2"></i> Medication & Prescription (Optional)</h5>
+                    <div class="row">
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label small fw-semibold">Medication Name</label>
+                            <input type="text" class="form-control" name="medication_name" placeholder="e.g. Lisinopril 10mg">
+                        </div>
+                        <div class="col-md-5 mb-3">
+                            <label class="form-label small fw-semibold">Encrypted Dosage Instructions</label>
+                            <input type="text" class="form-control" name="dosage_instructions" placeholder="Take 1 tablet orally once daily with food">
+                        </div>
+                        <div class="col-md-2 mb-3">
+                            <label class="form-label small fw-semibold">Duration (Days)</label>
+                            <input type="number" class="form-control" name="duration_days" value="30">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Document Attachment -->
+                    <h5 class="fw-bold mb-3 text-teal"><i class="fa-solid fa-file-shield me-2"></i> Diagnostic Report Attachment (Encrypted on write)</h5>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Upload Diagnostic Document / Image / PDF</label>
+                        <input type="file" class="form-control" name="document" accept=".pdf,.png,.jpg,.jpeg,.txt,.docx,.dicom">
+                        <small class="form-text text-muted">File bytes are encrypted on disk with AES-256-GCM and hashed with SHA-256.</small>
+                    </div>
+
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="checkbox" id="is_sensitive" name="is_sensitive">
+                        <label class="form-check-label small" for="is_sensitive">
+                            Flag this record as highly sensitive medical data
+                        </label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary-ehr py-2 px-4">
+                        <i class="fa-solid fa-lock me-1"></i> Encrypt and Store Medical Record
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Summary Sidebar -->
+    <div class="col-lg-4">
+        <div class="ehr-card">
+            <div class="ehr-card-header">
+                <h6 class="fw-bold mb-0"><i class="fa-solid fa-user text-primary me-2"></i> Patient Information</h6>
+            </div>
+            <div class="ehr-card-body p-4">
+                <div class="d-flex align-items-center gap-3 mb-3">
+                    <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px;">
+                        {{ patient.full_name[:1] | upper }}
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0">{{ patient.full_name }}</h6>
+                        <span class="badge bg-light text-primary border font-monospace">{{ patient.patient_uid }}</span>
+                    </div>
+                </div>
+                <div class="small">
+                    <div class="mb-2"><strong>Age:</strong> {{ patient.age }} years</div>
+                    <div class="mb-2"><strong>Gender:</strong> {{ patient.gender }}</div>
+                    <div class="mb-2"><strong>Blood Group:</strong> <span class="badge bg-danger-subtle text-danger">{{ patient.blood_group or 'Unknown' }}</span></div>
+                    <div class="mb-2"><strong>Emergency Contact:</strong> {{ patient.emergency_contact or 'N/A' }}</div>
+                    <div><strong>Address:</strong> {{ patient.address or 'N/A' }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

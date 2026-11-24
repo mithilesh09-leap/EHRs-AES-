@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block title %}Doctor Clinical Console - EHR Guardian{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Clinical Workspace</h2>
+        <p class="text-muted small mb-0">Assigned patient monitoring, encrypted record authoring, and diagnostic review</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{{ url_for('doctor.patients') }}" class="btn btn-primary-ehr btn-sm">
+            <i class="fa-solid fa-user-plus me-1"></i> Patient Directory
+        </a>
+    </div>
+</div>
+
+<!-- Stats row -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-4">
+        <div class="stat-card shadow-sm">
+            <div>
+                <span class="text-muted small fw-semibold">Assigned Patients</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.patient_count }}</h3>
+                <small class="text-teal"><i class="fa-solid fa-hospital-user"></i> Active Care List</small>
+            </div>
+            <div class="stat-icon-wrapper stat-icon-teal">
+                <i class="fa-solid fa-hospital-user"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+        <div class="stat-card shadow-sm">
+            <div>
+                <span class="text-muted small fw-semibold">Consultations Logged</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.record_count }}</h3>
+                <small class="text-success"><i class="fa-solid fa-lock"></i> Encrypted with GCM</small>
+            </div>
+            <div class="stat-icon-wrapper stat-icon-emerald">
+                <i class="fa-solid fa-file-medical"></i>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-4">
+        <div class="stat-card shadow-sm">
+            <div>
+                <span class="text-muted small fw-semibold">Active Prescriptions</span>
+                <h3 class="fw-bold mt-1 mb-0">{{ stats.prescription_count }}</h3>
+                <small class="text-primary"><i class="fa-solid fa-pills"></i> In Treatment</small>
+            </div>
+            <div class="stat-icon-wrapper stat-icon-blue">
+                <i class="fa-solid fa-pills"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Assigned Patients Table -->
+    <div class="col-lg-8">
+        <div class="ehr-card">
+            <div class="ehr-card-header">
+                <h6 class="fw-bold mb-0"><i class="fa-solid fa-users text-primary me-2"></i> My Patients</h6>
+                <a href="{{ url_for('doctor.patients') }}" class="btn btn-outline-primary btn-sm py-0" style="font-size: 0.8rem;">All Patients &rarr;</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom align-middle">
+                    <thead>
+                        <tr>
+                            <th>Patient Identifier</th>
+                            <th>Full Name</th>
+                            <th>Age / Gender</th>
+                            <th>Blood Group</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if patients %}
+                            {% for p in patients %}
+                                <tr>
+                                    <td>
+                                        <span class="badge bg-light text-primary border font-monospace">{{ p.patient_uid }}</span>
+                                    </td>
+                                    <td class="fw-semibold">{{ p.full_name }}</td>
+                                    <td class="text-muted small">{{ p.age or '-' }} yrs &bull; {{ p.gender }}</td>
+                                    <td>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ p.blood_group or 'N/A' }}</span>
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ url_for('doctor.patient_detail', patient_id=p.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fa-solid fa-notes-medical me-1"></i> Open Chart
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center py-4 text-muted">No assigned patients yet.</td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Records Authored -->
+    <div class="col-lg-4">
+        <div class="ehr-card">
+            <div class="ehr-card-header">
+                <h6 class="fw-bold mb-0"><i class="fa-solid fa-clock-rotate-left text-teal me-2"></i> Recent Clinical Records</h6>
+            </div>
+            <div class="ehr-card-body p-0">
+                <ul class="list-group list-group-flush small">
+                    {% for rec in recent_records %}
+                        <li class="list-group-item p-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="badge bg-teal-subtle text-teal border">{{ rec.record_type }}</span>
+                                <span class="text-muted" style="font-size: 0.75rem;">{{ rec.visit_date.strftime('%b %d, %Y') }}</span>
+                            </div>
+                            <div class="fw-bold">{{ rec.diagnosis_title }}</div>
+                            <div class="text-muted small mb-2">Patient: {{ rec.patient.full_name }} ({{ rec.patient.patient_uid }})</div>
+                            <a href="{{ url_for('records.view_record', record_id=rec.id) }}" class="btn btn-sm btn-light border text-primary w-100 py-1" style="font-size: 0.75rem;">
+                                <i class="fa-solid fa-lock-open me-1"></i> Decrypt & View
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="list-group-item text-center py-4 text-muted">No consultations logged yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

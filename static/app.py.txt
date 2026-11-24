@@ -1,0 +1,38 @@
+from flask import Flask, render_template, request, redirect, url_for
+from cryptography.fernet import Fernet
+import base64
+import os
+
+app = Flask(__name__)
+
+# Generate a key for encryption
+key = Fernet.generate_key()
+cipher_suite = Fernet(key)
+
+# In a real application, you would store this key securely, not in the code.
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/submit', methods=['POST'])
+def submit():
+    # Collect patient data from the form
+    patient_data = {
+        'name': request.form['name'],
+        'age': request.form['age'],
+        'medical_history': request.form['medical_history']
+    }
+
+    # Convert the data to a string and encrypt it
+    data_str = str(patient_data)
+    encrypted_data = cipher_suite.encrypt(data_str.encode())
+
+    # In a real application, you would store the encrypted data in a secure database.
+    # For this example, we'll just print it to the console.
+    print("Encrypted Data:", encrypted_data)
+
+    return redirect(url_for('index'))
+
+if __name__ == '__main__':
+    app.run(debug=True)
